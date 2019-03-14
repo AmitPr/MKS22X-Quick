@@ -2,37 +2,42 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Quick {
-    public static void main(String[] args) {
-        int size = 10;
-        for (int i = 0; i < 1; i++) {
-            int[] test = new int[size];
-            for (int j = 0; j < size; j++) {
-                test[j] = new Random().nextInt(5);// - (size / 2);
+    
+    
+    public static void main(String[]args){
+        System.out.println("Size\t\tMax Value\tquick/builtin ratio ");
+        int[]MAX_LIST = {1000000000,500,10};
+        for(int MAX : MAX_LIST){
+          for(int size = 31250; size < 2000001; size*=2){
+            long qtime=0;
+            long btime=0;
+            //average of 5 sorts.
+            for(int trial = 0 ; trial <=5; trial++){
+              int []data1 = new int[size];
+              int []data2 = new int[size];
+              for(int i = 0; i < data1.length; i++){
+                data1[i] = (int)(Math.random()*MAX);
+                data2[i] = data1[i];
+              }
+              long t1,t2;
+              t1 = System.currentTimeMillis();
+              Quick.quicksort(data2);
+              t2 = System.currentTimeMillis();
+              qtime += t2 - t1;
+              t1 = System.currentTimeMillis();
+              Arrays.sort(data1);
+              t2 = System.currentTimeMillis();
+              btime+= t2 - t1;
+              if(!Arrays.equals(data1,data2)){
+                System.out.println("FAIL TO SORT!");
+                System.exit(0);
+              }
             }
-            int[] sorted = Arrays.copyOf(test, size);
-            partitionDutch(sorted, 0, sorted.length-1);
-            System.out.println(Arrays.toString(sorted));
-            /*
-            long time = System.nanoTime();
-            Arrays.sort(sorted);
-            System.out.print("Built-in Took: " + ((System.nanoTime() - time) / 1000000) + "ms");
-            time = System.nanoTime();
-            quicksort(test);
-            System.out.println(", Mine Took: " + ((System.nanoTime() - time) / 1000000) + "ms");
-            boolean fail = false;
-            for (int j = 0; j < test.length; j++) {
-                if (test[j] != sorted[j]) {
-                    fail = true;
-                }
-            }
-            if (fail) {
-                System.out.println("FAIL");
-            } else {
-                System.out.println("SUCCESS");
-            }*/
+            System.out.println(size +"\t\t"+MAX+"\t"+1.0*qtime/btime);
+          }
+          System.out.println();
         }
     }
-
     /*
      * return the value that is the kth smallest value of the array.
      */
@@ -60,9 +65,15 @@ public class Quick {
 
     public static void quickHelper(int[] data, int lo, int hi) {
         if (hi - lo > 0) {
+            /*
             int index = partition(data, lo, hi);
             quickHelper(data, lo, index - 1);
             quickHelper(data, index + 1, hi);
+            */
+            int[] ltgt = partitionDutch(data, lo, hi);
+            quickHelper(data, lo, ltgt[0]-1);
+            quickHelper(data, ltgt[1]+1, hi);
+            
         }
     }
 
@@ -167,22 +178,22 @@ public class Quick {
             pIndex = median;
         }
         int pivot = data[pIndex];
-        System.out.println(pivot);
         data[pIndex] = data[lo];
         data[lo] = pivot;
+        int start = lo;
         lo++;
         int[] ltgt = new int[] { lo, hi };
-        // |-----r1------|-----r2-----|-----r3-----|----r4----|
-        int count = 0;
         while (lo <= hi) {
-            count++;
             if (data[lo] > pivot) {
                 while (data[hi] > pivot) {
                     hi--;
-                    ltgt[1] = ltgt[1] - 1;
+                    ltgt[1]--;
                     if(lo >= hi){
-                        data[0]=data[ltgt[0]-1];
+                        data[start]=data[ltgt[0]-1];
                         data[ltgt[0]-1]=pivot;
+                        ltgt[0]--;
+                        if(lo==hi)
+                            ltgt[1]--;
                         return ltgt;
                     }
                 }
@@ -191,7 +202,7 @@ public class Quick {
                     data[hi] = data[lo];
                     data[lo]=temp;
                     hi--;
-                    ltgt[1] = ltgt[1] - 1;
+                    ltgt[1]--;
                     if(data[lo]==pivot){
                         lo++;
                     }
@@ -206,9 +217,9 @@ public class Quick {
                 lo++;
             }
         }
-        data[0]=data[ltgt[0]-1];
+        data[start]=data[ltgt[0]-1];
         data[ltgt[0]-1]=pivot;
-        System.out.println(ltgt[0]);
+        ltgt[0]--;
         return ltgt;
     }
 
