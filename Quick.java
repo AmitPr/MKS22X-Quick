@@ -2,42 +2,44 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Quick {
-    
-    
-    public static void main(String[]args){
+
+    private static final int INSERTION = 7;
+
+    public static void main(String[] args) {
         System.out.println("Size\t\tMax Value\tquick/builtin ratio ");
-        int[]MAX_LIST = {1000000000,500,10};
-        for(int MAX : MAX_LIST){
-          for(int size = 31250; size < 2000001; size*=2){
-            long qtime=0;
-            long btime=0;
-            //average of 5 sorts.
-            for(int trial = 0 ; trial <=5; trial++){
-              int []data1 = new int[size];
-              int []data2 = new int[size];
-              for(int i = 0; i < data1.length; i++){
-                data1[i] = (int)(Math.random()*MAX);
-                data2[i] = data1[i];
-              }
-              long t1,t2;
-              t1 = System.currentTimeMillis();
-              Quick.quicksort(data2);
-              t2 = System.currentTimeMillis();
-              qtime += t2 - t1;
-              t1 = System.currentTimeMillis();
-              Arrays.sort(data1);
-              t2 = System.currentTimeMillis();
-              btime+= t2 - t1;
-              if(!Arrays.equals(data1,data2)){
-                System.out.println("FAIL TO SORT!");
-                System.exit(0);
-              }
+        int[] MAX_LIST = { 1000000000, 500, 10 };
+        for (int MAX : MAX_LIST) {
+            for (int size = 31250; size < 2000001; size *= 2) {
+                long qtime = 0;
+                long btime = 0;
+                // average of 5 sorts.
+                for (int trial = 0; trial <= 5; trial++) {
+                    int[] data1 = new int[size];
+                    int[] data2 = new int[size];
+                    for (int i = 0; i < data1.length; i++) {
+                        data1[i] = (int) (Math.random() * MAX);
+                        data2[i] = data1[i];
+                    }
+                    long t1, t2;
+                    t1 = System.currentTimeMillis();
+                    Quick.quicksort(data2);
+                    t2 = System.currentTimeMillis();
+                    qtime += t2 - t1;
+                    t1 = System.currentTimeMillis();
+                    Arrays.sort(data1);
+                    t2 = System.currentTimeMillis();
+                    btime += t2 - t1;
+                    if (!Arrays.equals(data1, data2)) {
+                        System.out.println("FAIL TO SORT!");
+                        System.exit(0);
+                    }
+                }
+                System.out.println(size + "\t\t" + MAX + "\t" + 1.0 * qtime / btime);
             }
-            System.out.println(size +"\t\t"+MAX+"\t"+1.0*qtime/btime);
-          }
-          System.out.println();
+            System.out.println();
         }
     }
+
     /*
      * return the value that is the kth smallest value of the array.
      */
@@ -65,15 +67,28 @@ public class Quick {
 
     public static void quickHelper(int[] data, int lo, int hi) {
         if (hi - lo > 0) {
-            /*
-            int index = partition(data, lo, hi);
-            quickHelper(data, lo, index - 1);
-            quickHelper(data, index + 1, hi);
-            */
-            int[] ltgt = partitionDutch(data, lo, hi);
-            quickHelper(data, lo, ltgt[0]-1);
-            quickHelper(data, ltgt[1]+1, hi);
-            
+            if (hi - lo <= INSERTION) {
+                insertionSort(data, lo, hi);
+            } else {
+                int[] ltgt = partitionDutch(data, lo, hi);
+                quickHelper(data, lo, ltgt[0] - 1);
+                quickHelper(data, ltgt[1] + 1, hi);
+        }
+
+        }
+    }
+
+    private static void insertionSort(int[] data, int lo, int hi) {
+        for (int i = lo; i <= hi; i++) {
+            for (int x = i; x > lo; x--) {
+                if (data[x] < data[x - 1]) {
+                    int temp = data[x];
+                    data[x] = data[x - 1];
+                    data[x - 1] = temp;
+                } else {
+                    break;
+                }
+            }
         }
     }
 
@@ -188,11 +203,11 @@ public class Quick {
                 while (data[hi] > pivot) {
                     hi--;
                     ltgt[1]--;
-                    if(lo >= hi){
-                        data[start]=data[ltgt[0]-1];
-                        data[ltgt[0]-1]=pivot;
+                    if (lo >= hi) {
+                        data[start] = data[ltgt[0] - 1];
+                        data[ltgt[0] - 1] = pivot;
                         ltgt[0]--;
-                        if(lo==hi)
+                        if (lo == hi)
                             ltgt[1]--;
                         return ltgt;
                     }
@@ -200,25 +215,25 @@ public class Quick {
                 if (data[hi] <= pivot) {
                     int temp = data[hi];
                     data[hi] = data[lo];
-                    data[lo]=temp;
+                    data[lo] = temp;
                     hi--;
                     ltgt[1]--;
-                    if(data[lo]==pivot){
+                    if (data[lo] == pivot) {
                         lo++;
                     }
                 }
-            }else if (data[lo] < pivot){
+            } else if (data[lo] < pivot) {
                 int temp = data[lo];
-                data[lo]=data[ltgt[0]];
-                data[ltgt[0]]=temp;
+                data[lo] = data[ltgt[0]];
+                data[ltgt[0]] = temp;
                 ltgt[0]++;
                 lo++;
-            }else{
+            } else {
                 lo++;
             }
         }
-        data[start]=data[ltgt[0]-1];
-        data[ltgt[0]-1]=pivot;
+        data[start] = data[ltgt[0] - 1];
+        data[ltgt[0] - 1] = pivot;
         ltgt[0]--;
         return ltgt;
     }
